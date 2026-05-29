@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Task Detail</h1>
+<div class="panel">
+  {% if task %}
+    <p><strong>{{ task.title }}</strong></p>
+    <p class="muted">{{ task.task_id }}</p>
+    <p>Status: {{ task.status }}</p>
+    <p>Preferred Agent: {{ task.preferred_agent or '-' }}</p>
+    <p>Assigned Worker: {{ task.assigned_worker_id or '-' }}</p>
+    <p>Result Summary: {{ task.result_summary or '-' }}</p>
+    <p>Error Summary: {{ task.error_summary or '-' }}</p>
+  {% else %}
+    <p>Task not found.</p>
+  {% endif %}
+</div>
+<div class="panel" style="margin-top:20px;">
+  <h2>Events</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Message</th><th>Time</th></tr></thead>
+    <tbody>
+    {% for event in events %}
+      <tr>
+        <td>{{ event.event_type }}</td>
+        <td>{{ event.message }}</td>
+        <td>{{ event.created_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

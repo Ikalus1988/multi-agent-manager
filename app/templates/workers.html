@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Workers</h1>
+<div class="panel">
+  <table>
+    <thead><tr><th>Worker</th><th>Machine</th><th>Status</th><th>Current Task</th><th>Last Heartbeat</th></tr></thead>
+    <tbody>
+    {% for worker in workers %}
+      <tr>
+        <td>{{ worker.worker_id }}</td>
+        <td>{{ worker.machine_name }}</td>
+        <td>{{ worker.status }}</td>
+        <td>{{ worker.current_task_id or '-' }}</td>
+        <td>{{ worker.last_heartbeat_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

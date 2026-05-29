@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="cards">
+  <div class="card"><div class="muted">Workers Total</div><div>{{ stats.workers_total }}</div></div>
+  <div class="card"><div class="muted">Workers Online</div><div class="ok">{{ stats.workers_online }}</div></div>
+  <div class="card"><div class="muted">Tasks Running</div><div>{{ stats.tasks_running }}</div></div>
+  <div class="card"><div class="muted">Tasks Failed</div><div class="bad">{{ stats.tasks_failed }}</div></div>
+  <div class="card"><div class="muted">Manual Needed</div><div class="warn">{{ stats.tasks_manual_needed }}</div></div>
+</div>
+<div class="panel">
+  <h2>Create Task</h2>
+  <form method="post" action="/api/tasks/create" onsubmit="submitTask(event)">
+    <label>Title<input name="title" id="title" required /></label>
+    <label>Description<textarea name="description" id="description"></textarea></label>
+    <label>Preferred Agent<input name="preferred_agent" id="preferred_agent" placeholder="cc / hermes / openclaw" /></label>
+    <label>Preferred Worker<input name="preferred_worker" id="preferred_worker" placeholder="optional" /></label>
+    <label>Prompt<input name="prompt" id="prompt" placeholder="task prompt" /></label>
+    <div class="actions" style="margin-top:12px;"><button class="btn" type="submit">Create</button></div>
+  </form>
+</div>
+<div class="panel" style="margin-top:20px;">
+  <h2>Recent Tasks</h2>
+  <table>
+    <thead><tr><th>Task</th><th>Status</th><th>Worker</th><th>Agent</th><th>Created</th></tr></thead>
+    <tbody>
+    {% for task in tasks %}
+      <tr>
+        <td><a class="inline" href="/tasks/{{ task.task_id }}">{{ task.title }}</a><div class="muted">{{ task.task_id }}</div></td>
+        <td>{{ task.status }}</td>
+        <td>{{ task.assigned_worker_id or '-' }}</td>
+        <td>{{ task.preferred_agent or '-' }}</td>
+        <td>{{ task.created_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+async function submitTask(event) {
+  event.preventDefault();
+  const payload = {
+    title: document.getElementById('title').value,
+    description: document.getElementById('description').value,
+    preferred_agent: document.getElementById('preferred_agent').value || null,
+    preferred_worker: document.getElementById('preferred_worker').value || null,
+    input_payload: { prompt: document.getElementById('prompt').value }
+  };
+  const res = await fetch('/api/tasks/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (res.ok) location.reload();
+}
+</script>
+{% endblock %}
