@@ -1,23 +1,33 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>Dashboard</h1>
+<h1>Agent Status Dashboard</h1>
 <div class="cards">
-  <div class="card"><div class="muted">Workers Total</div><div>{{ stats.workers_total }}</div></div>
-  <div class="card"><div class="muted">Workers Online</div><div class="ok">{{ stats.workers_online }}</div></div>
+  <div class="card"><div class="muted">Devices Total</div><div>{{ stats.workers_total }}</div></div>
+  <div class="card"><div class="muted">Devices Online</div><div class="ok">{{ stats.workers_online }}</div></div>
+  <div class="card"><div class="muted">Needs Attention</div><div class="warn">{{ stats.workers_needs_attention }}</div></div>
   <div class="card"><div class="muted">Tasks Running</div><div>{{ stats.tasks_running }}</div></div>
-  <div class="card"><div class="muted">Tasks Failed</div><div class="bad">{{ stats.tasks_failed }}</div></div>
-  <div class="card"><div class="muted">Manual Needed</div><div class="warn">{{ stats.tasks_manual_needed }}</div></div>
 </div>
 <div class="panel">
-  <h2>Create Task</h2>
-  <form method="post" action="/api/tasks/create" onsubmit="submitTask(event)">
-    <label>Title<input name="title" id="title" required /></label>
-    <label>Description<textarea name="description" id="description"></textarea></label>
-    <label>Preferred Agent<input name="preferred_agent" id="preferred_agent" placeholder="cc / hermes / openclaw" /></label>
-    <label>Preferred Worker<input name="preferred_worker" id="preferred_worker" placeholder="optional" /></label>
-    <label>Prompt<input name="prompt" id="prompt" placeholder="task prompt" /></label>
-    <div class="actions" style="margin-top:12px;"><button class="btn" type="submit">Create</button></div>
-  </form>
+  <h2>Devices</h2>
+  <table>
+    <thead><tr><th>Device</th><th>Connectivity</th><th>State</th><th>Current Task</th><th>Last Heartbeat</th><th>Last Error</th><th>Action</th></tr></thead>
+    <tbody>
+    {% for item in workers %}
+      <tr>
+        <td>
+          <a class="inline" href="/workers/{{ item.worker.worker_id }}">{{ item.worker.worker_id }}</a>
+          <div class="muted">{{ item.worker.machine_name }} · {{ item.worker.host_type }}</div>
+        </td>
+        <td class="{{ 'ok' if item.connectivity == 'online' else 'bad' }}">{{ item.connectivity }}</td>
+        <td class="{{ 'warn' if item.state == 'needs_attention' else '' }}">{{ item.state }}</td>
+        <td>{{ item.worker.current_task_id or '-' }}</td>
+        <td>{{ item.worker.last_heartbeat_at }}</td>
+        <td>{{ item.worker.last_error_summary or '-' }}</td>
+        <td>{% if item.state in ['needs_attention', 'error', 'offline'] %}<span class="warn">Use 向日葵 / Termius</span>{% else %}<span class="muted">Monitor</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
 <div class="panel" style="margin-top:20px;">
   <h2>Recent Tasks</h2>
@@ -36,22 +46,4 @@
     </tbody>
   </table>
 </div>
-<script>
-async function submitTask(event) {
-  event.preventDefault();
-  const payload = {
-    title: document.getElementById('title').value,
-    description: document.getElementById('description').value,
-    preferred_agent: document.getElementById('preferred_agent').value || null,
-    preferred_worker: document.getElementById('preferred_worker').value || null,
-    input_payload: { prompt: document.getElementById('prompt').value }
-  };
-  const res = await fetch('/api/tasks/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  if (res.ok) location.reload();
-}
-</script>
 {% endblock %}

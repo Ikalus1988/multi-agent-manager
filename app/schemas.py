@@ -17,6 +17,9 @@ class WorkerHeartbeat(BaseModel):
     current_task_id: Optional[str] = None
     load: int = 0
     status: str = "idle"
+    app_version: str = ""
+    last_error_summary: str = ""
+    requires_manual_intervention: bool = False
 
 
 class TaskPullRequest(BaseModel):

@@ -15,6 +15,7 @@ CONFIG = {
     "agents": ["mock", "cc", "hermes"],
     "tags": ["company-net", "hp", "wsl"],
     "max_concurrency": 1,
+    "app_version": "0.1.0",
 }
 
 
@@ -22,7 +23,13 @@ def register(client: httpx.Client) -> None:
     client.post(f"{BASE_URL}/api/workers/register", json=CONFIG).raise_for_status()
 
 
-def heartbeat(client: httpx.Client, status: str = "idle", current_task_id: str | None = None) -> None:
+def heartbeat(
+    client: httpx.Client,
+    status: str = "idle",
+    current_task_id: str | None = None,
+    last_error_summary: str = "",
+    requires_manual_intervention: bool = False,
+) -> None:
     client.post(
         f"{BASE_URL}/api/workers/heartbeat",
         json={
@@ -30,6 +37,9 @@ def heartbeat(client: httpx.Client, status: str = "idle", current_task_id: str |
             "current_task_id": current_task_id,
             "load": 0,
             "status": status,
+            "app_version": CONFIG["app_version"],
+            "last_error_summary": last_error_summary,
+            "requires_manual_intervention": requires_manual_intervention,
         },
     ).raise_for_status()
 
@@ -71,7 +81,7 @@ def run_forever() -> None:
                     "message": "mock adapter started",
                 },
             )
-            heartbeat(client, status="busy", current_task_id=task["task_id"])
+            heartbeat(client, status="running", current_task_id=task["task_id"])
             result = adapter.run(task)
             report(
                 client,
@@ -81,10 +91,16 @@ def run_forever() -> None:
                     "status": result["status"],
                     "message": result["message"],
                     "result_summary": result.get("result_summary", ""),
+                    "error_summary": result.get("error_summary", ""),
                     "output_payload": result.get("output_payload", {}),
                 },
             )
-            heartbeat(client)
+            heartbeat(
+                client,
+                status="needs_attention" if result["status"] in {"failed", "manual_needed"} else "idle",
+                last_error_summary=result.get("error_summary", ""),
+                requires_manual_intervention=result["status"] in {"failed", "manual_needed"},
+            )
             time.sleep(1)
 
 

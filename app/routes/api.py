@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.db import get_session
-from app.models import Task, TaskEvent, Worker
+from app.models import HeartbeatEvent, Task, TaskEvent, Worker
 from app.schemas import TaskCreate, TaskPullRequest, TaskReport, WorkerHeartbeat, WorkerRegister
 
 router = APIRouter(prefix="/api", tags=["api"])
@@ -62,9 +62,27 @@ def heartbeat(payload: WorkerHeartbeat, session: Session = Depends(get_session))
         raise HTTPException(status_code=404, detail="worker not found")
     worker.current_task_id = payload.current_task_id
     worker.status = payload.status
+    worker.app_version = payload.app_version
+    worker.last_error_summary = payload.last_error_summary
+    worker.requires_manual_intervention = payload.requires_manual_intervention
     worker.last_heartbeat_at = utcnow()
     worker.updated_at = utcnow()
+    if payload.last_error_summary:
+        worker.last_error_at = utcnow()
+    if payload.status in {"idle", "running"} and not payload.last_error_summary:
+        worker.last_success_at = utcnow()
     session.add(worker)
+    session.add(
+        HeartbeatEvent(
+            worker_id=payload.worker_id,
+            status=payload.status,
+            current_task_id=payload.current_task_id,
+            load=payload.load,
+            app_version=payload.app_version,
+            last_error_summary=payload.last_error_summary,
+            requires_manual_intervention=payload.requires_manual_intervention,
+        )
+    )
     session.commit()
     return {"ok": True, "server_time": utcnow().isoformat()}
 
@@ -178,10 +196,11 @@ def summary(session: Session = Depends(get_session)):
     workers = session.exec(select(Worker)).all()
     tasks = session.exec(select(Task)).all()
     now = utcnow()
-    online_count = sum(1 for w in workers if normalize_dt(w.last_heartbeat_at) and normalize_dt(w.last_heartbeat_at) >= now - timedelta(seconds=30))
+    online_count = sum(1 for w in workers if normalize_dt(w.last_heartbeat_at) and normalize_dt(w.last_heartbeat_at) >= now - timedelta(seconds=90))
     return {
         "workers": len(workers),
         "workers_online": online_count,
+        "workers_needs_attention": sum(1 for w in workers if w.requires_manual_intervention),
         "tasks_total": len(tasks),
         "tasks_running": sum(1 for t in tasks if t.status in {"assigned", "running"}),
         "tasks_failed": sum(1 for t in tasks if t.status == "failed"),

@@ -18,9 +18,26 @@ class Worker(SQLModel, table=True):
     max_concurrency: int = 1
     status: str = "offline"
     current_task_id: Optional[str] = None
+    app_version: str = ""
+    last_error_summary: str = ""
+    last_error_at: Optional[datetime] = None
+    last_success_at: Optional[datetime] = None
+    requires_manual_intervention: bool = False
     last_heartbeat_at: datetime = Field(default_factory=utcnow)
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
+
+
+class HeartbeatEvent(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    worker_id: str = Field(index=True)
+    status: str
+    current_task_id: Optional[str] = None
+    load: int = 0
+    app_version: str = ""
+    last_error_summary: str = ""
+    requires_manual_intervention: bool = False
+    created_at: datetime = Field(default_factory=utcnow)
 
 
 class Task(SQLModel, table=True):

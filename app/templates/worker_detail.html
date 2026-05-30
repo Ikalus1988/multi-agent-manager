@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Device Detail</h1>
+<div class="panel">
+  {% if worker %}
+    <p><strong>{{ worker.worker_id }}</strong></p>
+    <p class="muted">{{ worker.machine_name }} · {{ worker.host_type }}</p>
+    <p>State: {{ worker.status }}</p>
+    <p>Current Task: {{ worker.current_task_id or '-' }}</p>
+    <p>App Version: {{ worker.app_version or '-' }}</p>
+    <p>Last Heartbeat: {{ worker.last_heartbeat_at }}</p>
+    <p>Last Success: {{ worker.last_success_at or '-' }}</p>
+    <p>Last Error: {{ worker.last_error_summary or '-' }}</p>
+    <p>Manual Intervention: {{ 'yes' if worker.requires_manual_intervention else 'no' }}</p>
+    <p class="warn">If this device needs intervention, use 向日葵 or Termius.</p>
+  {% else %}
+    <p>Device not found.</p>
+  {% endif %}
+</div>
+<div class="panel" style="margin-top:20px;">
+  <h2>Recent Heartbeats</h2>
+  <table>
+    <thead><tr><th>Status</th><th>Task</th><th>Version</th><th>Last Error</th><th>Manual</th><th>Time</th></tr></thead>
+    <tbody>
+    {% for event in events %}
+      <tr>
+        <td>{{ event.status }}</td>
+        <td>{{ event.current_task_id or '-' }}</td>
+        <td>{{ event.app_version or '-' }}</td>
+        <td>{{ event.last_error_summary or '-' }}</td>
+        <td>{{ 'yes' if event.requires_manual_intervention else 'no' }}</td>
+        <td>{{ event.created_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
