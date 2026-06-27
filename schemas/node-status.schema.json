@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MisakaNet Node Status",
+  "type": "object",
+  "properties": {
+    "location": {"type": "string", "enum": ["company", "private", "cloud", "public"]},
+    "os": {"type": "string", "enum": ["windows", "macos", "linux", "cloud", "unknown"]},
+    "agents": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "trust_level": {
+      "type": "string",
+      "enum": ["private", "internal", "public"]
+    },
+    "sync_policy": {
+      "type": "string",
+      "enum": ["local-only", "sanitized-to-github", "public-to-portal"]
+    },
+    "last_seen_at": {"type": "string"}
+  }
+}
