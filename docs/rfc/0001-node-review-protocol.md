@@ -51,5 +51,5 @@ Checks:
 
 - 5 nodes total.
 - Minimum 4 approvals.
-- company-win and company-mac must not block.
+- company-win and company-mac must approve.
 - Any critical security concern must be resolved before implementation.
