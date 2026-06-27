@@ -6,6 +6,8 @@
   <div class="card"><div class="muted">Devices Online</div><div class="ok">{{ stats.workers_online }}</div></div>
   <div class="card"><div class="muted">Needs Attention</div><div class="warn">{{ stats.workers_needs_attention }}</div></div>
   <div class="card"><div class="muted">Tasks Running</div><div>{{ stats.tasks_running }}</div></div>
+  <div class="card"><div class="muted">Memory Items</div><div>{{ stats.memory_items }}</div></div>
+  <div class="card"><div class="muted">Export Ready</div><div>{{ stats.memory_export_ready }}</div></div>
 </div>
 <div class="panel">
   <h2>Devices</h2>
@@ -16,7 +18,7 @@
       <tr>
         <td>
           <a class="inline" href="/workers/{{ item.worker.worker_id }}">{{ item.worker.worker_id }}</a>
-          <div class="muted">{{ item.worker.machine_name }} · {{ item.worker.host_type }}</div>
+          <div class="muted">{{ item.worker.machine_name }} / {{ item.worker.host_type }}</div>
         </td>
         <td class="{{ 'ok' if item.connectivity == 'online' else 'bad' }}">{{ item.connectivity }}</td>
         <td class="{{ 'warn' if item.state == 'needs_attention' else '' }}">{{ item.state }}</td>

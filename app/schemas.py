@@ -45,3 +45,19 @@ class TaskCreate(BaseModel):
     preferred_agent: Optional[str] = None
     preferred_worker: Optional[str] = None
     input_payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class MemoryCreate(BaseModel):
+    type: str
+    title: str
+    content: str
+    source_node: str
+    source_agent: str = ""
+    source_ref: str = ""
+    tags: list[str] = Field(default_factory=list)
+    sensitivity: str = "private-local-only"
+    sync_status: str = "local-only"
+
+
+class MemorySyncStatusUpdate(BaseModel):
+    sync_status: str

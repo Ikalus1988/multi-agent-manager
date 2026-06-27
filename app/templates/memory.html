@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Memory</h1>
+<div class="panel">
+  <p class="muted">Local-first collaboration memory. Items stay local unless explicitly marked public/project-public and export-ready.</p>
+  <table>
+    <thead><tr><th>Title</th><th>Type</th><th>Source</th><th>Sensitivity</th><th>Sync</th><th>Created</th><th>Content</th></tr></thead>
+    <tbody>
+    {% for item in items %}
+      <tr>
+        <td><code>{{ item.memory_id }}</code><br>{{ item.title }}</td>
+        <td>{{ item.type }}</td>
+        <td>{{ item.source_node }}{% if item.source_agent %}<div class="muted">{{ item.source_agent }}</div>{% endif %}</td>
+        <td>{{ item.sensitivity }}</td>
+        <td>{{ item.sync_status }}</td>
+        <td>{{ item.created_at }}</td>
+        <td><div class="clip">{{ item.content }}</div></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="panel" style="margin-top:20px;">
+  <h2>Quick API</h2>
+  <pre><code>POST /api/memory/items
+GET  /api/memory/items?q=roadmap
+GET  /api/memory/public</code></pre>
+</div>
+{% endblock %}
