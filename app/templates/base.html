@@ -13,7 +13,7 @@
     .cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:20px; }
     .card, .panel { background:#111827; border:1px solid #334155; border-radius:12px; padding:16px; }
     table { width:100%; border-collapse: collapse; }
-    th, td { border:1px solid #334155; padding:10px; text-align:left; }
+    th, td { border:1px solid #334155; padding:10px; text-align:left; vertical-align:top; }
     th { background:#1e293b; }
     .ok { color:#86efac; }
     .warn { color:#fcd34d; }
@@ -24,6 +24,8 @@
     input, textarea, select { width:100%; padding:8px; margin-top:6px; background:#0f172a; color:#e5e7eb; border:1px solid #334155; border-radius:8px; }
     label { display:block; margin-top:10px; }
     a.inline { color:#67e8f9; }
+    .clip { max-width:520px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    code { color:#bae6fd; }
   </style>
 </head>
 <body>
@@ -32,6 +34,7 @@
     <a href="/dashboard">Dashboard</a>
     <a href="/workers">Workers</a>
     <a href="/tasks">Tasks</a>
+    <a href="/memory">Memory</a>
   </div>
   <div class="wrap">
     {% block content %}{% endblock %}

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -6,10 +7,11 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 
 from app.db import get_session
-from app.models import HeartbeatEvent, Task, TaskEvent, Worker
+from app.models import HeartbeatEvent, MemoryItem, Task, TaskEvent, Worker
 
 router = APIRouter(tags=["web"])
-templates = Jinja2Templates(directory="/mnt/c/Users/hp/multi-agent-manager/app/templates")
+TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
+templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 
 def utcnow() -> datetime:
@@ -33,6 +35,7 @@ def home():
 def dashboard(request: Request, session: Session = Depends(get_session)):
     workers = session.exec(select(Worker).order_by(Worker.updated_at.desc())).all()
     tasks = session.exec(select(Task).order_by(Task.created_at.desc())).all()
+    memory_items = session.exec(select(MemoryItem)).all()
     now = utcnow()
     workers_view = []
     for worker in workers:
@@ -51,6 +54,8 @@ def dashboard(request: Request, session: Session = Depends(get_session)):
             "workers_online": sum(1 for item in workers_view if item["connectivity"] == "online"),
             "workers_needs_attention": sum(1 for item in workers_view if item["worker"].requires_manual_intervention),
             "tasks_running": sum(1 for task in tasks if task.status in {"assigned", "running"}),
+            "memory_items": len(memory_items),
+            "memory_export_ready": sum(1 for item in memory_items if item.sensitivity in {"public", "project-public"} and (item.sync_status.startswith("ready-for") or item.sync_status.startswith("synced-"))),
         },
     }
     return templates.TemplateResponse("dashboard.html", context)
@@ -75,6 +80,12 @@ def workers_page(request: Request, session: Session = Depends(get_session)):
 def tasks_page(request: Request, session: Session = Depends(get_session)):
     tasks = session.exec(select(Task).order_by(Task.created_at.desc())).all()
     return templates.TemplateResponse("tasks.html", {"request": request, "tasks": tasks})
+
+
+@router.get("/memory")
+def memory_page(request: Request, session: Session = Depends(get_session)):
+    items = session.exec(select(MemoryItem).order_by(MemoryItem.created_at.desc())).all()
+    return templates.TemplateResponse("memory.html", {"request": request, "items": items[:100]})
 
 
 @router.get("/workers/{worker_id}")

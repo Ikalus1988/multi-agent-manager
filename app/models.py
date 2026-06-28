@@ -65,3 +65,19 @@ class TaskEvent(SQLModel, table=True):
     event_type: str
     message: str = ""
     created_at: datetime = Field(default_factory=utcnow)
+
+
+class MemoryItem(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    memory_id: str = Field(index=True, unique=True)
+    type: str = Field(index=True)
+    title: str
+    content: str
+    source_node: str = Field(index=True)
+    source_agent: str = ""
+    source_ref: str = ""
+    tags_json: str = "[]"
+    sensitivity: str = Field(default="private-local-only", index=True)
+    sync_status: str = Field(default="local-only", index=True)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)

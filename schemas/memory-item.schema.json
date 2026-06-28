@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "type", "title", "content", "source_node", "sensitivity", "sync_status", "created_at"],
+  "properties": {
+    "id": {"type": "string"},
+    "type": {
+      "type": "string",
+      "enum": ["review", "roadmap", "architecture", "decision", "session", "external"]
+    },
+    "title": {"type": "string"},
+    "content": {"type": "string"},
+    "source_node": {"type": "string"},
+    "source_agent": {"type": "string"},
+    "source_ref": {"type": "string"},
+    "tags": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": ["public", "project-public", "internal-summary", "private-local-only", "secret-never-sync"]
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": ["local-only", "ready-for-github", "synced-github", "ready-for-portal", "synced-portal"]
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}
